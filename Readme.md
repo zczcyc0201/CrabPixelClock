@@ -7,3 +7,6 @@ How to use
 1. 使用arduino IDE上传data/index.html文件到8266开发板
 2. 上传代码main.ino 
 3. 连续点击按钮会进入设置模式，使用和像素时钟在同一个局域网的设备，打开浏览器，输入像素屏上显示的ip进行显示设置
+
+
+![预览](https://raw.githubusercontent.com/zczcyc0201/CrabPixelClock/master/preview/time.JPG) 
