@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>像素时钟设置</title>
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+    <script src="jquery.min.js"></script>
+    <script src="knob.js"></script>
+    <script>
+        $('.dial').trigger(
+            'configure',
+            {
+                "min":1,
+                "max":100,
+                "width":150,
+                "fgColor":"#ffec03",
+                "skin":"tron",
+                "thickness":0.2,
+                "displayPrevious":true,
+                "cursor":true
+            }
+        );
+    </script>
+</head>
+
+<body style="background-color: #ccdde2">
+    <h1>选择像素时钟显示内容</h1>
+    <form action="/settingSubmit">
+        <p><input type="text" name="weatherKey" placeholder="心知天气私钥,留空不变" value=""></p>
+
+        <p><input type="checkbox" name="showWeather" value="1" /> 天气 <input type="text" name="city"
+                placeholder="输入城市,留空不变" value=""></p>
+        <p><input type="checkbox" name="showBili" value="1" /> Bili粉丝 <input type="text" name="bilibili"
+                placeholder="输入B站UID" value=""></p>
+        <p><input type="checkbox" name="showTemperature" value="1" />室内温度</p>
+
+        <p><input type="checkbox" name="showHumidity" value="1" />室内湿度</p>
+
+        <p><input type="checkbox" name="showStock1" value="1" />股票价格1 <input type="text" name="stockCode1"
+                placeholder="输入股票代码1,留空不变" value=""></p>
+
+        <p><input type="checkbox" name="showStock2" value="1" />股票价格2 <input type="text" name="stockCode2"
+                placeholder="输入股票代码2,留空不变" value=""></p>
+
+        <p><input id="btnOperate" type="submit" value="确定" /></p>
+        <p>
+            心知天气私钥点击<a target="_blank" href="https://www.seniverse.com/">这里</a>申请
+        </p>
+        <p>
+            天气城市名可直接输入中文:如：北京，北京朝阳
+        </p>
+        <p>
+            股票代码示例:sz002307,sh600519
+        </p>
+        <p>
+            格式为交易所代码加股票代码,sh为沪市,sz为深市,具体可参考新浪财经API格式
+        </p>
+    </form>
+</br>
+</br>
+    <div>
+        点击圆环设置灯阵亮度,更改后自动保存
+    </div>
+</br>
+</br>
+    <input type="text" class="dial" value="75" data-displayPrevious=true data-fgColor="#00A8A9" data-thickness=.3 value="29">
+
+    <script>
+        $(".dial").knob({
+            'change' : function (v) { console.log(Math.round(v,0));    
+            $.ajax({url: "/setBrightness?bright="+Math.round(v,0), success: function(result){
+                    $("#div1").html(result);
+                }});
+        }
+        });
+    
+    </script>
+</body>
+
+</html>
