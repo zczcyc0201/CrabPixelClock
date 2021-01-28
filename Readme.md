@@ -9,6 +9,6 @@ How to use
 3. 连续点击按钮会进入设置模式，使用和像素时钟在同一个局域网的设备，打开浏览器，输入像素屏上显示的ip进行显示设置
 
 
-![时间]](https://raw.githubusercontent.com/zczcyc0201/CrabPixelClock/master/preview/time.JPG) 
-![湿度]]](https://raw.githubusercontent.com/zczcyc0201/CrabPixelClock/master/preview/humidity.JPG) 
-![天气]](https://raw.githubusercontent.com/zczcyc0201/CrabPixelClock/master/preview/weather.JPG) 
+![时间](https://raw.githubusercontent.com/zczcyc0201/CrabPixelClock/master/preview/time.JPG) 
+![湿度](https://raw.githubusercontent.com/zczcyc0201/CrabPixelClock/master/preview/humidity.JPG) 
+![天气](https://raw.githubusercontent.com/zczcyc0201/CrabPixelClock/master/preview/weather.JPG) 
