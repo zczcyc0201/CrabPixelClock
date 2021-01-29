@@ -15,7 +15,6 @@ const char martrixOffsetY = 6;
 class DisplayManager {
 public:
     //网络请求类
-    FuncHttpReq httpClient = FuncHttpReq();
     DisplayManager() {};
     void displayTemperature(FuncNeoPixelMatrix& funcMatrix, FuncDHT11& funcDHT11); //显示温度
     void displayHumidity(FuncNeoPixelMatrix& funcMatrix, FuncDHT11& funcDHT11); //显示湿度
@@ -45,7 +44,7 @@ private:
     unsigned long biliUpdateTime = 0; //B站粉丝更新时间
     unsigned int biliUpdateGap = 10000; //更新间隔
     unsigned int updateGap = 5000; //更新间隔
-    String getStockPrice(String& stockCode);
+    String getStockPrice(FuncHttpReq &httpClient,String &stockCode);
     void playSingleFrame(FuncNeoPixelMatrix& funcMatrix, uint8_t x, uint8_t y, const uint8_t* animationFrame, unsigned long color, int delayTime,bool fillZero=true);
     String getBiliFans();
     //定义显示用色值

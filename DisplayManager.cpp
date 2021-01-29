@@ -145,7 +145,7 @@ void DisplayManager::displayTime(FuncNeoPixelMatrix &funcMatrix, FuncNTP &funcNt
 }
 
 //获取股票价格
-String DisplayManager::getStockPrice(String &stockCode)
+String DisplayManager::getStockPrice(FuncHttpReq &httpClient, String &stockCode)
 {
     // 获取一次股票实时价格
     // var hq_str_sz002307="北新路桥,4.840,4.840,4.900,4.910,4.810,4.890,4.900,5540988,27006418.280,406740,4.890,238880,4.880,122060,4.870,158700,4.860,212900,4.850,128400,4.900,184500,4.910,168700,4.920,91760,4.930,92880,4.940,2021-01-04,14:53:51,00";
@@ -155,6 +155,7 @@ String DisplayManager::getStockPrice(String &stockCode)
 //显示股票价格
 void DisplayManager::displayStockPrice(FuncNeoPixelMatrix &funcMatrix, String stockCode, unsigned long *colorMap, unsigned char *pixels)
 {
+    FuncHttpReq httpClient = FuncHttpReq();
     currentShowStockCode = stockCode;
     funcMatrix.fillScreen(0); //清空屏幕
     funcMatrix.setTextColor(myColorStockUp);
@@ -162,7 +163,7 @@ void DisplayManager::displayStockPrice(FuncNeoPixelMatrix &funcMatrix, String st
     if ((millis() - stockUpdateTime) > updateGap && currentShowStockCode == stockCode)
     { //检查是否到了更新时间
         stockUpdateTime = millis();
-        String stockResult = getStockPrice(stockCode); //网络更新
+        String stockResult = getStockPrice(httpClient, stockCode); //网络更新
         if (stockResult != "FAIL")
         {
             String stockCurrentResult = httpClient.getSplitString(stockResult, ',', 3);
@@ -194,6 +195,8 @@ void DisplayManager::displayStockPrice(FuncNeoPixelMatrix &funcMatrix, String st
 //获取B站粉丝数量
 String DisplayManager::getBiliFans()
 {
+    FuncHttpReq httpClient = FuncHttpReq();
+
     String biliFans = httpClient.getRequest(biliAPI + biliUID, 5000);
     if (biliFans == "FAIL")
     {
