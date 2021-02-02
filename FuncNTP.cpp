@@ -15,12 +15,12 @@ unsigned long FuncNTP::getNTPTimeSeconds()
 	unsigned long epochTime = timeClient.getEpochTime();
 	return epochTime;
 }
-//Return value: Sunday=0, Monday=1, ... Saturday=6
+//Return value: Sunday=1, Monday=2, ... Saturday=7
 int FuncNTP::getDayOfWeek()
 {
 	uint32_t epochTime = getNTPTimeSeconds();
 	time_t localtime = epochTime;
 	int days_since_epoch = localtime / 86400;
 	int day_of_week = (days_since_epoch + 4) % 7;
-	return day_of_week;
+	return day_of_week+1;
 }

@@ -24,11 +24,13 @@
 #include <ESP8266WiFi.h>
 #include <FS.h>
 #include <OneButton.h>
-#include <RtcDS1302.h> //RTC模块
+#include <stdio.h>
+#include <DS1302.h>
+#include <time.h>
+
 int matrixBright = 50; //灯阵亮度
 //时钟模块定义
-ThreeWire myWire(PIN_RTC_DAT_IO, PIN_RTC_CLK, PIN_RTC_CE_RST); // DAT/IO, SCLK/CLK, CE/RST
-RtcDS1302<ThreeWire> rtc(myWire);
+DS1302 rtc(PIN_RTC_CE_RST, PIN_RTC_DAT_IO, PIN_RTC_CLK);
 
 //2020年1月1日时间戳 因为时区的原因要加8个小时 RTC模块计算时间要用到
 const int epochTime2000 = 946684800;
@@ -208,17 +210,11 @@ void setup()
     //初始化DHT11
     funcDHT11.init();
     //初始化时钟
-    rtc.Begin();
-    //检测RTC是否处于运行状态
-    if (rtc.GetIsRunning() != true)
-    {
-        Serial.println("RTC IS NOT RUNNING!");
-    }
+    rtc.writeProtect(false);
+    rtc.halt(false);
+
     //获取当日天气预报数据
     funcWeather.getWeatherFromInternet();
-    //获取网络时间设置给RTC模块
-    RtcDateTime newDt(funcNtp.getNTPTimeSeconds() - epochTime2000);
-    rtc.SetDateTime(newDt);
 }
 
 uint8_t showContentType = 1;                     //当前要显示的内容类型
@@ -227,11 +223,14 @@ unsigned long startLoopSecond = millis() / 1000; //每个loop开始的时间
 int settingCursorX = funcMatrix.width();
 unsigned long weatherRefreshTime = millis() / 1000;
 
-RtcDateTime rtcNow = rtc.GetDateTime();
-char showHour = rtcNow.Hour();
-char showMin = rtcNow.Minute();
-char showSec = rtcNow.Second();
-char showDayOfWeek = funcNtp.getDayOfWeek();
+Time rtcNow = rtc.time();
+char showHour = rtcNow.hr;
+char showMin = rtcNow.min;
+char showSec = rtcNow.sec;
+char showYear = rtcNow.yr;
+char showMonth = rtcNow.mon;
+char showDate = rtcNow.date;
+char showDayOfWeek = rtcNow.day;
 unsigned long rtcRefreshTime = millis();
 
 void loop()
@@ -260,12 +259,40 @@ void loop()
         if (weatherRefreshGap > 60)
         {
             weatherRefreshTime = millNum / 1000;
-            unsigned long ntpTime=funcNtp.getNTPTimeSeconds();
-            RtcDateTime newDt(ntpTime - epochTime2000);
-            rtc.SetDateTime(newDt);
-            newDt = NULL;
-            Serial.print(ntpTime);
+            char dayOfWeek = funcNtp.getDayOfWeek();
             Serial.println("正在刷新网络时间...");
+            Time::Day dayOfWeekNew = Time::kSunday;
+            if (dayOfWeek == 1)
+            {
+                dayOfWeekNew = Time::kSunday;
+            }
+            else if (dayOfWeek == 2)
+            {
+                dayOfWeekNew = Time::kMonday;
+            }
+            else if (dayOfWeek == 3)
+            {
+                dayOfWeekNew = Time::kTuesday;
+            }
+            else if (dayOfWeek == 4)
+            {
+                dayOfWeekNew = Time::kWednesday;
+            }
+            else if (dayOfWeek == 5)
+            {
+                dayOfWeekNew = Time::kThursday;
+            }
+            else if (dayOfWeek == 6)
+            {
+                dayOfWeekNew = Time::kFriday;
+            }
+            else if (dayOfWeek == 7)
+            {
+                dayOfWeekNew = Time::kSaturday;
+            }
+            Time newTime(showYear, showMonth, showDate, funcNtp.timeClient.getHours(), funcNtp.timeClient.getMinutes(), funcNtp.timeClient.getSeconds(), dayOfWeekNew);
+            // Set the time and date on the chip.
+            rtc.time(newTime);
             funcWeather.getWeatherFromInternet();
             Serial.println("正在刷新天气信息...");
         }
@@ -285,16 +312,18 @@ void loop()
         case 1:
         { //时间必须显示
             //获取当前时间 并格式化后显示到屏幕
-            long rtcGap =millis() - rtcRefreshTime;
+            long rtcGap = millis() - rtcRefreshTime;
             if (rtcGap > 900)
-            {   //每超过900毫秒获取一次时间
-                RtcDateTime rtcNow = rtc.GetDateTime();
-                showHour = rtcNow.Hour();
-                showMin = rtcNow.Minute();
-                showSec = rtcNow.Second();
-                showDayOfWeek = funcNtp.getDayOfWeek();
-                rtcRefreshTime=millis();
-                rtcNow=NULL;
+            { //每超过900毫秒获取一次时间
+                Time rtcNow = rtc.time();
+                showHour = rtcNow.hr;
+                showMin = rtcNow.min;
+                showSec = rtcNow.sec;
+                showYear = rtcNow.yr;
+                showMonth = rtcNow.mon;
+                showDate = rtcNow.date;
+                showDayOfWeek = rtcNow.day;
+                rtcRefreshTime = millis();
             }
             displayer.displayTime(funcMatrix, showDayOfWeek, showHour, showMin, showSec);
             delay(100);

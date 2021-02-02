@@ -117,25 +117,25 @@ void DisplayManager::displayTime(FuncNeoPixelMatrix &funcMatrix, char dayOfWeek,
     funcMatrix.setCursor(0, 0);
     switch (dayOfWeek)
     {
-    case 0:
+    case 1:
         funcMatrix.drawColorMap(weekColorArr, 20, 1, sunPixels, 6, 7);
         break;
-    case 1:
+    case 2:
         funcMatrix.drawColorMap(weekColorArr, 20, 1, monPixels, 6, 7);
         break;
-    case 2:
+    case 3:
         funcMatrix.drawColorMap(weekColorArr, 20, 1, tuePixels, 6, 7);
         break;
-    case 3:
+    case 4:
         funcMatrix.drawColorMap(weekColorArr, 20, 1, wedPixels, 6, 7);
         break;
-    case 4:
+    case 5:
         funcMatrix.drawColorMap(weekColorArr, 20, 1, thuPixels, 6, 7);
         break;
-    case 5:
+    case 6:
         funcMatrix.drawColorMap(weekColorArr, 20, 1, friPixels, 6, 7);
         break;
-    case 6:
+    case 7:
         funcMatrix.drawColorMap(weekColorArr, 20, 1, staPixels, 6, 7);
         break;
     }
