@@ -2,6 +2,15 @@
     "files.associations": {
         "*.tcc": "cpp",
         "fstream": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "*.inc": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "memory": "cpp",
+        "initializer_list": "cpp"
     }
 }

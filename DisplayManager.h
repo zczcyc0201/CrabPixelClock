@@ -19,7 +19,7 @@ public:
     void displayTemperature(FuncNeoPixelMatrix& funcMatrix, FuncDHT11& funcDHT11); //显示温度
     void displayHumidity(FuncNeoPixelMatrix& funcMatrix, FuncDHT11& funcDHT11); //显示湿度
     void displayWeather(FuncNeoPixelMatrix& funcMatrix, FuncWeather& funcWeather); //显示天气
-    void displayTime(FuncNeoPixelMatrix& funcMatrix, FuncNTP& funcNtp, char hour, char min, char sec); //显示时间
+    void displayTime(FuncNeoPixelMatrix& funcMatrix, char dayOfWeek, char hour, char min, char sec); //显示时间
     void displayStockPrice(FuncNeoPixelMatrix& funcMatrix, String stockCode, unsigned long* colorMap, unsigned char* pixels); //显示股票价格
     void displaySetting(FuncNeoPixelMatrix& funcMatrix);
     void displayAnimationHook(FuncNeoPixelMatrix& funcMatrix, uint8_t x, uint8_t y); //对勾动画
@@ -42,8 +42,8 @@ public:
 private:
     unsigned long stockUpdateTime = 0; //股票价格更新时间
     unsigned long biliUpdateTime = 0; //B站粉丝更新时间
-    unsigned int biliUpdateGap = 10000; //更新间隔
-    unsigned int updateGap = 5000; //更新间隔
+    unsigned int biliUpdateGap = 30000; //更新间隔
+    unsigned int updateGap = 10000; //更新间隔
     String getStockPrice(FuncHttpReq &httpClient,String &stockCode);
     void playSingleFrame(FuncNeoPixelMatrix& funcMatrix, uint8_t x, uint8_t y, const uint8_t* animationFrame, unsigned long color, int delayTime,bool fillZero=true);
     String getBiliFans();

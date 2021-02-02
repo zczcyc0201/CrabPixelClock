@@ -1,22 +1,21 @@
 #include "DisplayManager.h"
-#include "FuncDHT11.h" //DHT11温湿度模块
-#include "FuncHttpReq.h" //HTTP模块
-#include "FuncNTP.h" //NTP网络时间模块
+#include "FuncDHT11.h"          //DHT11温湿度模块
+#include "FuncHttpReq.h"        //HTTP模块
+#include "FuncNTP.h"            //NTP网络时间模块
 #include "FuncNeoPixelMatrix.h" //灯阵模块
-#include "FuncWeather.h" //天气获取模块
-#include "IconsPixels.h" //图标定义
-#include "IconsWeather.h" //图标定义
+#include "FuncWeather.h"        //天气获取模块
+#include "IconsPixels.h"        //图标定义
+#include "IconsWeather.h"       //图标定义
 #include "ShapeAnimation.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
-#include <ThreeWire.h> //RTC模块 必须在RtcDS1302之前include
-#include <Ticker.h>
-#define PIN_LED D5 //定义LED数据使用的PIN
+#include <ThreeWire.h>    //RTC模块 必须在RtcDS1302之前include
+#define PIN_LED D5        //定义LED数据使用的PIN
 #define PIN_RTC_CE_RST D2 //DS1302 PIN
 #define PIN_RTC_DAT_IO D3 //DS1302 PIN
-#define PIN_RTC_CLK D4 //DS1302 PIN
-#define BUTTON_PIN D8 //按钮的gpio接口
+#define PIN_RTC_CLK D4    //DS1302 PIN
+#define BUTTON_PIN D8     //按钮的gpio接口
 #include "WiFiManager.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -26,8 +25,6 @@
 #include <FS.h>
 #include <OneButton.h>
 #include <RtcDS1302.h> //RTC模块
-Ticker ticker; // 建立Ticker用于实现定时功能
-unsigned long tickerCount60 = 1; //ticker计数
 int matrixBright = 50; //灯阵亮度
 //时钟模块定义
 ThreeWire myWire(PIN_RTC_DAT_IO, PIN_RTC_CLK, PIN_RTC_CE_RST); // DAT/IO, SCLK/CLK, CE/RST
@@ -43,18 +40,18 @@ FuncDHT11 funcDHT11 = FuncDHT11();
 FuncWeather funcWeather = FuncWeather();
 //灯阵对象
 FuncNeoPixelMatrix funcMatrix = FuncNeoPixelMatrix(32, 8, 1, 1, PIN_LED,
-    NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG,
-    NEO_GRB + NEO_KHZ800);
+                                                   NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG,
+                                                   NEO_GRB + NEO_KHZ800);
 //显示管理类
 DisplayManager displayer = DisplayManager();
 
-uint8_t lastShowTime = 10; //时间显示每次持续时长 单位秒
+uint8_t lastShowTime = 10;         //时间显示每次持续时长 单位秒
 bool shouldShowTemperature = true; //是否显示温度
-bool shouldShowHumidity = true; //是否显示湿度
-bool shouldShowWeather = true; //是否显示天气
-bool shouldShowStock = true; //是否显示股票价格
-bool shouldShowStock2 = true; //是否显示股票价格
-bool shouldShowBiliFans = true; //是否显示bili粉丝
+bool shouldShowHumidity = true;    //是否显示湿度
+bool shouldShowWeather = true;     //是否显示天气
+bool shouldShowStock = true;       //是否显示股票价格
+bool shouldShowStock2 = true;      //是否显示股票价格
+bool shouldShowBiliFans = true;    //是否显示bili粉丝
 //是否为设置模式
 bool isSettingMode = false;
 //初始化按钮控制
@@ -70,7 +67,8 @@ const String settingBrightFileName = "/mysetting/setBrightJson.txt";
 
 void readSettingJson()
 { //读取之前保存的亮度
-    if (SPIFFS.exists(settingBrightFileName)) {
+    if (SPIFFS.exists(settingBrightFileName))
+    {
         File dataFileRead = SPIFFS.open(settingBrightFileName, "r");
         String setJson = dataFileRead.readString();
         dataFileRead.close();
@@ -78,14 +76,16 @@ void readSettingJson()
         deserializeJson(doc, setJson);
         JsonObject jobj = doc.as<JsonObject>();
         int brightness = jobj["brightness"];
-        if (brightness < 1) { //防止出现错误亮度为0不显示
+        if (brightness < 1)
+        { //防止出现错误亮度为0不显示
             brightness = 30;
         }
         matrixBright = brightness;
         funcMatrix.setBrightness(brightness);
     }
     //确认闪存中是否有file_name文件
-    if (SPIFFS.exists(settingFileName)) {
+    if (SPIFFS.exists(settingFileName))
+    {
         Serial.print(settingFileName);
         Serial.println("SETTING FOUND.");
         //建立File对象用于从SPIFFS中读取文件
@@ -114,7 +114,9 @@ void readSettingJson()
         displayer.stockCode2 = stockCode2;
         String biliUid = jobj["biliUid"];
         displayer.biliUID = biliUid;
-    } else {
+    }
+    else
+    {
         Serial.println("SETTING NOT FOUND.");
     }
 }
@@ -124,10 +126,13 @@ void handleDoubleClick()
 {
     Serial.println("handleDoubleClick");
     isSettingMode = !isSettingMode;
-    if (isSettingMode) {
+    if (isSettingMode)
+    {
         funcMatrix.setTextColor(BLUE);
         esp8266_server.begin(); //设置模式 开启网络服务
-    } else {
+    }
+    else
+    {
         esp8266_server.stop(); //显示模式 停止网络服务
     }
 }
@@ -135,7 +140,7 @@ void handleDoubleClick()
 void handleBrightness()
 {
     String brightStr = esp8266_server.arg("bright"); // 获取用户请求中的PWM数值
-    int brightVal = brightStr.toInt(); // 将用户请求中的PWM数值转换为整数
+    int brightVal = brightStr.toInt();               // 将用户请求中的PWM数值转换为整数
     brightVal = map(brightVal, 1, 100, 1, 255);
     Serial.print("brightVal = ");
     Serial.println(brightVal);
@@ -168,7 +173,8 @@ void setup()
     funcMatrix.show();
     //WIFI连接
     WiFiManager wifiManager;
-    if (!wifiManager.autoConnect("PIXEL-CLOCK")) {
+    if (!wifiManager.autoConnect("PIXEL-CLOCK"))
+    {
         Serial.println("failed to connect and hit timeout");
         delay(3000);
         ESP.reset();
@@ -179,7 +185,8 @@ void setup()
     //读取配置文件
     readSettingJson();
     //没设置key 不显示天气
-    if (funcWeather.reqUserKey == "") {
+    if (funcWeather.reqUserKey == "")
+    {
         shouldShowWeather = false;
     }
     //设置按钮长按触发时间和回调
@@ -203,7 +210,8 @@ void setup()
     //初始化时钟
     rtc.Begin();
     //检测RTC是否处于运行状态
-    if (rtc.GetIsRunning() != true) {
+    if (rtc.GetIsRunning() != true)
+    {
         Serial.println("RTC IS NOT RUNNING!");
     }
     //获取当日天气预报数据
@@ -211,110 +219,155 @@ void setup()
     //获取网络时间设置给RTC模块
     RtcDateTime newDt(funcNtp.getNTPTimeSeconds() - epochTime2000);
     rtc.SetDateTime(newDt);
-    //ticker定时刷新一些网络信息 每秒触发一次
-    ticker.attach(1, tickTask);
 }
-void tickTask()
-{ //此处不能执行耗时任务 只是做一下出发标记 具体任务在loop执行
-    tickerCount60++;
-}
-void dealTickTask(bool refreshNtp, bool refreshWeather)
-{ //处理定时任务函数
-    if (refreshNtp) {
-        RtcDateTime newDt(funcNtp.getNTPTimeSeconds() - epochTime2000);
-        rtc.SetDateTime(newDt);
-        Serial.println("正在刷新网络时间...");
-    }
-    if (refreshWeather && shouldShowWeather) {
-        funcWeather.getWeatherFromInternet();
-        Serial.println("正在刷新天气信息...");
-    }
-}
-uint8_t showContentType = 1; //当前要显示的内容类型
-uint8_t maxTypeCount = 7; //最多显示的种类
+
+uint8_t showContentType = 1;                     //当前要显示的内容类型
+uint8_t maxTypeCount = 7;                        //最多显示的种类
 unsigned long startLoopSecond = millis() / 1000; //每个loop开始的时间
 int settingCursorX = funcMatrix.width();
+unsigned long weatherRefreshTime = millis() / 1000;
+
+RtcDateTime rtcNow = rtc.GetDateTime();
+char showHour = rtcNow.Hour();
+char showMin = rtcNow.Minute();
+char showSec = rtcNow.Second();
+char showDayOfWeek = funcNtp.getDayOfWeek();
+unsigned long rtcRefreshTime = millis();
+
 void loop()
 {
     delay(100);
     oneBtn.tick();
-    if (isSettingMode) {
+    if (isSettingMode)
+    {
         //设置模式 开启AP热点 开启服务器模式 让用户进入网页进行设置
         esp8266_server.handleClient(); // 处理用户请求
         funcMatrix.fillScreen(0);
         funcMatrix.setCursor(settingCursorX, martrixOffsetY); //滚动显示IP
         funcMatrix.print(WiFi.localIP().toString());
-        if (--settingCursorX < -50) {
+        if (--settingCursorX < -50)
+        {
             settingCursorX = funcMatrix.width();
         }
         funcMatrix.show();
         delay(60);
-    } else {
-        if (tickerCount60 >= 60) { //60秒的Ticker任务 刷新ntp 和 天气
-            dealTickTask(true, true);
-            tickerCount60 = 0;
+    }
+    else
+    {
+        long millNum = millis();
+        //天气和网络时间刷新逻辑
+        long weatherRefreshGap = (millNum / 1000) - weatherRefreshTime;
+        if (weatherRefreshGap > 60)
+        {
+            weatherRefreshTime = millNum / 1000;
+            unsigned long ntpTime=funcNtp.getNTPTimeSeconds();
+            RtcDateTime newDt(ntpTime - epochTime2000);
+            rtc.SetDateTime(newDt);
+            newDt = NULL;
+            Serial.print(ntpTime);
+            Serial.println("正在刷新网络时间...");
+            funcWeather.getWeatherFromInternet();
+            Serial.println("正在刷新天气信息...");
         }
-        long gapSec = (millis() / 1000) - startLoopSecond;
+
         //切换显示内容条件：已经到达了要求显示的持续时间 或者mills已经溢出 显示下一个类型
-        if (gapSec >= lastShowTime || gapSec < 0) {
+        long gapSec = (millNum / 1000) - startLoopSecond;
+        if (gapSec >= lastShowTime || gapSec < 0)
+        {
             startLoopSecond = millis() / 1000;
             showContentType++;
         }
         if (showContentType > maxTypeCount)
             showContentType = 1;
 
-        switch (showContentType) {
-        case 1: { //时间必须显示
+        switch (showContentType)
+        {
+        case 1:
+        { //时间必须显示
             //获取当前时间 并格式化后显示到屏幕
-            RtcDateTime rtcNow = rtc.GetDateTime();
-            displayer.displayTime(funcMatrix, funcNtp, rtcNow.Hour(), rtcNow.Minute(), rtcNow.Second());
+            long rtcGap =millis() - rtcRefreshTime;
+            if (rtcGap > 900)
+            {   //每超过900毫秒获取一次时间
+                RtcDateTime rtcNow = rtc.GetDateTime();
+                showHour = rtcNow.Hour();
+                showMin = rtcNow.Minute();
+                showSec = rtcNow.Second();
+                showDayOfWeek = funcNtp.getDayOfWeek();
+                rtcRefreshTime=millis();
+                rtcNow=NULL;
+            }
+            displayer.displayTime(funcMatrix, showDayOfWeek, showHour, showMin, showSec);
             delay(100);
             break;
         }
-        case 2: { //天气显示逻辑
-            if (shouldShowWeather) {
+        case 2:
+        { //天气显示逻辑
+            if (shouldShowWeather)
+            {
                 displayer.displayWeather(funcMatrix, funcWeather);
-            } else {
+            }
+            else
+            {
                 showContentType++;
             }
             break;
         }
-        case 3: { //温度显示逻辑
-            if (shouldShowTemperature) {
+        case 3:
+        { //温度显示逻辑
+            if (shouldShowTemperature)
+            {
                 displayer.displayTemperature(funcMatrix, funcDHT11);
-            } else {
+            }
+            else
+            {
                 showContentType++;
             }
             break;
         }
-        case 4: { //湿度显示逻辑
-            if (shouldShowHumidity) {
+        case 4:
+        { //湿度显示逻辑
+            if (shouldShowHumidity)
+            {
                 displayer.displayHumidity(funcMatrix, funcDHT11);
-            } else {
+            }
+            else
+            {
                 showContentType++;
             }
             break;
         }
-        case 5: { //股票显示逻辑
-            if (shouldShowStock) {
+        case 5:
+        { //股票显示逻辑
+            if (shouldShowStock)
+            {
                 displayer.displayStockPrice(funcMatrix, displayer.stockCode1, stockColorArr, stockPixels);
-            } else {
+            }
+            else
+            {
                 showContentType++;
             }
             break;
         }
-        case 6: { //股票显示逻辑
-            if (shouldShowStock2) {
+        case 6:
+        { //股票显示逻辑
+            if (shouldShowStock2)
+            {
                 displayer.displayStockPrice(funcMatrix, displayer.stockCode2, stock2ColorArr, stock2Pixels);
-            } else {
+            }
+            else
+            {
                 showContentType++;
             }
             break;
         }
-        case 7: { //b站粉丝
-            if (shouldShowBiliFans) {
+        case 7:
+        { //b站粉丝
+            if (shouldShowBiliFans)
+            {
                 displayer.displayBili(funcMatrix);
-            } else {
+            }
+            else
+            {
                 showContentType++;
             }
             break;
@@ -340,39 +393,49 @@ void handSettingSubmit()
     String biliUid = esp8266_server.arg("bilibili");
     Serial.print("biliUid:");
     Serial.println(biliUid);
-    if (esp8266_server.arg("showWeather") == "1") {
+    if (esp8266_server.arg("showWeather") == "1")
+    {
         Serial.println("showWeather:1");
-        if ((weatherKey == "" && funcWeather.reqUserKey == "") || (weatherCity == "" && funcWeather.reqLocation == "")) {
+        if ((weatherKey == "" && funcWeather.reqUserKey == "") || (weatherCity == "" && funcWeather.reqLocation == ""))
+        {
             returnMsg = "保存失败,天气显示需要设置城市和心知天气私钥,心知天气官网:https://www.seniverse.com/";
             esp8266_server.send(200, "text/html;charset=utf8", "<p>" + returnMsg + "</p>");
             return;
         }
         showWeather = 1;
     }
-    if (esp8266_server.arg("showTemperature") == "1") {
+    if (esp8266_server.arg("showTemperature") == "1")
+    {
         showTemperature = 1;
     }
-    if (esp8266_server.arg("showHumidity") == "1") {
+    if (esp8266_server.arg("showHumidity") == "1")
+    {
         showHumidity = 1;
     }
-    if (esp8266_server.arg("showStock1") == "1") {
-        if (stockCode1 == "" && displayer.stockCode1 == "") {
+    if (esp8266_server.arg("showStock1") == "1")
+    {
+        if (stockCode1 == "" && displayer.stockCode1 == "")
+        {
             returnMsg = "保存失败,显示股票价格需要设置股票代码";
             esp8266_server.send(200, "text/html;charset=utf8", "<p>" + returnMsg + "</p>");
             return;
         }
         showStock1 = 1;
     }
-    if (esp8266_server.arg("showStock2") == "1") {
-        if (stockCode2 == "" && displayer.stockCode2 == "") {
+    if (esp8266_server.arg("showStock2") == "1")
+    {
+        if (stockCode2 == "" && displayer.stockCode2 == "")
+        {
             returnMsg = "保存失败,显示股票价格需要设置股票代码";
             esp8266_server.send(200, "text/html;charset=utf8", "<p>" + returnMsg + "</p>");
             return;
         }
         showStock2 = 1;
     }
-    if (esp8266_server.arg("showBili") == "1") {
-        if (biliUid == "" && displayer.biliUID == "") {
+    if (esp8266_server.arg("showBili") == "1")
+    {
+        if (biliUid == "" && displayer.biliUID == "")
+        {
             returnMsg = "保存失败,显示B站粉丝需要设置UID";
             esp8266_server.send(200, "text/html;charset=utf8", "<p>" + returnMsg + "</p>");
             return;
@@ -390,29 +453,44 @@ void handSettingSubmit()
     saveDoc["showBili"] = showBili;
 
     //防止输入的空值覆盖
-    if (stockCode1 == "") {
+    if (stockCode1 == "")
+    {
         saveDoc["stockCode1"] = displayer.stockCode1;
-    } else {
+    }
+    else
+    {
         saveDoc["stockCode1"] = stockCode1;
     }
-    if (stockCode2 == "") {
+    if (stockCode2 == "")
+    {
         saveDoc["stockCode2"] = displayer.stockCode2;
-    } else {
+    }
+    else
+    {
         saveDoc["stockCode2"] = stockCode2;
     }
-    if (weatherKey == "") {
+    if (weatherKey == "")
+    {
         saveDoc["weatherKey"] = funcWeather.reqUserKey;
-    } else {
+    }
+    else
+    {
         saveDoc["weatherKey"] = weatherKey;
     }
-    if (weatherCity == "") {
+    if (weatherCity == "")
+    {
         saveDoc["weatherCity"] = funcWeather.reqLocation;
-    } else {
+    }
+    else
+    {
         saveDoc["weatherCity"] = weatherCity;
     }
-    if (biliUid == "") {
+    if (biliUid == "")
+    {
         saveDoc["biliUid"] = displayer.biliUID;
-    } else {
+    }
+    else
+    {
         saveDoc["biliUid"] = biliUid;
     }
     serializeJson(saveDoc, objStr);
@@ -425,24 +503,26 @@ void handSettingSubmit()
     handleDoubleClick();
 }
 //保存json到文件
-void saveSetting(char* objStr, String fileName)
+void saveSetting(char *objStr, String fileName)
 {
     File dataFile = SPIFFS.open(fileName, "w"); // 建立File对象用于向SPIFFS中的file对象（即/notes.txt）写入信息
-    dataFile.println(objStr); // 向dataFile写入字符串信息
+    dataFile.println(objStr);                   // 向dataFile写入字符串信息
     dataFile.flush();
     dataFile.close(); // 完成文件写入后关闭文件
 }
 bool handleFileRead(String path)
 { //处理浏览器HTTP访问
-    if (path.endsWith("/")) { // 如果访问地址以"/"为结尾
+    if (path.endsWith("/"))
+    { // 如果访问地址以"/"为结尾
         path = "/index.html";
     }
     String contentType = getContentType(path); // 获取文件类型
-    if (SPIFFS.exists(path)) { // 如果访问的文件可以在SPIFFS中找到
-        File file = SPIFFS.open(path, "r"); // 则尝试打开该文件
+    if (SPIFFS.exists(path))
+    {                                                 // 如果访问的文件可以在SPIFFS中找到
+        File file = SPIFFS.open(path, "r");           // 则尝试打开该文件
         esp8266_server.streamFile(file, contentType); // 并且将该文件返回给浏览器
-        file.close(); // 并且关闭文件
-        return true; // 返回true
+        file.close();                                 // 并且关闭文件
+        return true;                                  // 返回true
     }
     return false; // 如果文件未找到，则返回false
 }
@@ -484,7 +564,8 @@ void handleUserRequet()
     // 通过handleFileRead函数处处理用户访问
     bool fileReadOK = handleFileRead(webAddress);
     // 如果在SPIFFS无法找到用户访问的资源，则回复404 (Not Found)
-    if (!fileReadOK) {
+    if (!fileReadOK)
+    {
         esp8266_server.send(404, "text/plain", "404 Not Found");
     }
 }

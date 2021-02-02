@@ -90,18 +90,18 @@ void DisplayManager::displayWeather(FuncNeoPixelMatrix &funcMatrix, FuncWeather 
     funcMatrix.setTextColor(myColorWeatherHigh);
     if (todayHigh > 0 || todayLow > 0) //有一个温度值大于0 间隙可以小一点 好看
     {
-        funcMatrix.setCursor(iconWidth + 12, martrixOffsetY);
+        funcMatrix.setCursor(iconWidth + 14, martrixOffsetY);
     }
     else
     {
-        funcMatrix.setCursor(iconWidth + 14, martrixOffsetY);
+        funcMatrix.setCursor(iconWidth + 16, martrixOffsetY);
     }
     funcMatrix.print(todayHigh);
     funcMatrix.show();
 }
 
 //显示时间
-void DisplayManager::displayTime(FuncNeoPixelMatrix &funcMatrix, FuncNTP &funcNtp, char hour, char min, char sec)
+void DisplayManager::displayTime(FuncNeoPixelMatrix &funcMatrix, char dayOfWeek, char hour, char min, char sec)
 {
     //格式化时间
     char timeString[10];
@@ -113,8 +113,6 @@ void DisplayManager::displayTime(FuncNeoPixelMatrix &funcMatrix, FuncNTP &funcNt
     funcMatrix.setTextColor(myColorTime);
     //打印时间
     funcMatrix.print(timeString);
-    //绘制星期
-    int dayOfWeek = funcNtp.getDayOfWeek();
     //显示星期图标
     funcMatrix.setCursor(0, 0);
     switch (dayOfWeek)
